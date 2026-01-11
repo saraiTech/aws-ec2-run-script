@@ -1,0 +1,70 @@
+name: "Run S3 script on EC2 via SSM"
+description: "Fetch a script from S3 on an EC2 instance and run it via SSM"
+
+inputs:
+  instance-id:
+    description: "EC2 instance id"
+    required: true
+
+  bucket-name:
+    description: "S3 bucket containing the script"
+    required: true
+
+  script-location:
+    description: "S3 key of the script in the bucket"
+    required: true
+
+  env-vars-for-script:
+    description: |
+      Newline-separated KEY=VALUE pairs.
+      These are exported before running the script.
+    required: false
+    default: ""
+
+  script-name:
+    description: |
+      Optional override for the local filename.
+      Defaults to basename(script-location).
+    required: false
+    default: ""
+
+  poll-interval-seconds:
+    description: "Seconds between polling SSM"
+    required: false
+    default: "5"
+
+  timeout-seconds:
+    description: "Max seconds to wait before failing"
+    required: false
+    default: "1800"
+
+outputs:
+  command-id:
+    description: "SSM command id"
+    value: ${{ steps.run.outputs.command-id }}
+
+  status:
+    description: "Final SSM status"
+    value: ${{ steps.run.outputs.status }}
+
+  exit-code:
+    description: "SSM response code"
+    value: ${{ steps.run.outputs.exit-code }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run script via SSM
+      id: run
+      shell: bash
+      run: |
+        set -euo pipefail
+        bash "${{ github.action_path }}/scripts/run.sh"
+      env:
+        INPUT_INSTANCE_ID: ${{ inputs.instance-id }}
+        INPUT_BUCKET_NAME: ${{ inputs.bucket-name }}
+        INPUT_SCRIPT_LOCATION: ${{ inputs.script-location }}
+        INPUT_ENV_VARS: ${{ inputs.env-vars-for-script }}
+        INPUT_SCRIPT_NAME: ${{ inputs.script-name }}
+        INPUT_POLL_INTERVAL: ${{ inputs.poll-interval-seconds }}
+        INPUT_TIMEOUT: ${{ inputs.timeout-seconds }}
