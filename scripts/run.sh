@@ -66,6 +66,10 @@ if [ -n "$ENV_VARS" ]; then
 fi
 
 # Use python to JSON-encode the command list properly.
+
+export BUCKET_NAME SCRIPT_LOCATION SCRIPT_NAME
+export EXPORT_CMDS
+
 COMMANDS_JSON="$(
 python3 - <<'PY'
 import json
@@ -103,10 +107,6 @@ cmds += [
 print(json.dumps(cmds))
 PY
 )"
-
-
-export BUCKET_NAME SCRIPT_LOCATION SCRIPT_NAME
-export EXPORT_CMDS
 
 echo "Sending SSM command..."
 COMMAND_ID="$(
