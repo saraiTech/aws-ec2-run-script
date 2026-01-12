@@ -1,29 +1,35 @@
 name: "Run S3 script on EC2 via SSM"
-description: "Fetch a script from S3 on an EC2 instance and run it via SSM"
+description: "Fetch a script from S3 and run via SSM"
 
 inputs:
   instance-id:
-    description: "EC2 instance id"
-    required: true
+    description: "EC2 instance id (optional)"
+    required: false
+    default: ""
+
+  instance-name:
+    description: "EC2 Name tag value (optional)"
+    required: false
+    default: ""
 
   bucket-name:
-    description: "S3 bucket containing the script"
+    description: "S3 bucket containing script"
     required: true
 
   script-location:
-    description: "S3 key of the script in the bucket"
+    description: "S3 key of the script"
     required: true
 
   env-vars-for-script:
     description: |
       Newline-separated KEY=VALUE pairs.
-      These are exported before running the script.
+      Exported before running the script.
     required: false
     default: ""
 
   script-name:
     description: |
-      Optional override for the local filename.
+      Override local filename.
       Defaults to basename(script-location).
     required: false
     default: ""
@@ -34,7 +40,7 @@ inputs:
     default: "5"
 
   timeout-seconds:
-    description: "Max seconds to wait before failing"
+    description: "Max seconds before failing"
     required: false
     default: "1800"
 
@@ -62,6 +68,7 @@ runs:
         bash "${{ github.action_path }}/scripts/run.sh"
       env:
         INPUT_INSTANCE_ID: ${{ inputs.instance-id }}
+        INPUT_INSTANCE_NAME: ${{ inputs.instance-name }}
         INPUT_BUCKET_NAME: ${{ inputs.bucket-name }}
         INPUT_SCRIPT_LOCATION: ${{ inputs.script-location }}
         INPUT_ENV_VARS: ${{ inputs.env-vars-for-script }}
